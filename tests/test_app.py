@@ -104,3 +104,25 @@ def test_authors_endpoint(client):
     assert len(data) > 0
     author_names = [item["name"] for item in data]
     assert "Albert Einstein" in author_names
+
+def test_export_csv_endpoint(client):
+    """Verify CSV export endpoint returns proper CSV header and content."""
+    response = client.get("/api/quotes/csv")
+    assert response.status_code == 200
+    assert response.mimetype == "text/csv"
+    assert "Content-Disposition" in response.headers
+    assert "famous_quotes.csv" in response.headers["Content-Disposition"]
+    
+    lines = response.data.decode("utf-8").strip().splitlines()
+    assert len(lines) == 101  # 1 header line + 100 quotes
+    assert '"ID","Quote","Author","Category"' in lines[0]
+
+def test_export_csv_filtered(client):
+    """Verify CSV export with category filter."""
+    response = client.get("/api/quotes/csv?category=Science")
+    assert response.status_code == 200
+    lines = response.data.decode("utf-8").strip().splitlines()
+    assert len(lines) > 1
+    # Check that data rows belong to Science
+    for row in lines[1:]:
+        assert "Science" in row

@@ -21,13 +21,15 @@ A responsive web application built with **Python Flask**, **Vanilla JavaScript**
   - **Author Dropdown**: Filter quotes by author, complete with count indicators.
   - **Quick Author Click**: Clicking any author name on any card in the gallery automatically filters the entire view by that author.
   - **Empty State**: Friendly fallback when no matching quotes are found, with a one-click "Reset All Filters" button.
-- **Clipboard Integration**: One-click "Copy" on both the hero card and gallery cards with formatted output (`"Quote text" — Author`) and toast notifications.
+- **Clipboard Integration**: One-click "Copy to Clipboard" button on every quote card and hero card with inline "Copied!" visual feedback and toast notifications.
+- **Export to CSV**: Download matching or all quotes directly to a CSV file (with Excel UTF-8 BOM encoding and dynamic file naming, e.g., `famous_quotes_science.csv`).
 - **Adaptive Design**: Fully responsive layout (mobile, tablet, desktop) with automatic **Dark Mode** support based on user OS preferences.
 
 ### Backend & API
 - **Lightweight Flask Architecture**: Zero external frontend build tools, powered by clean Python routing.
 - **Fast In-Memory Filtering**: JSON-backed dataset with case-insensitive search and parameter-based querying.
-- **Automated Test Suite**: 10 unit tests covering dataset integrity, route responses, and edge cases.
+- **CSV Export Engine**: Programmatic and browser-accessible CSV generation via `/api/quotes/csv`.
+- **Automated Test Suite**: 12 unit tests covering dataset integrity, route responses, CSV exports, and edge cases.
 
 ---
 
@@ -143,7 +145,20 @@ pytest tests/ -v
     }
     ```
 
-### 4. Categories Metadata
+### 4. Export Quotes to CSV
+- **`GET /api/quotes/csv`**
+  - **Query Parameters (Optional)**:
+    - `q`: Search keyword matching quote text, author, or category.
+    - `category`: Category name or `all`.
+    - `author`: Author name or `all`.
+  - **Sample Response** (`200 OK`, `Content-Type: text/csv`):
+    ```csv
+    "ID","Quote","Author","Category"
+    "2","In the middle of difficulty lies opportunity.","Albert Einstein","Science"
+    ...
+    ```
+
+### 5. Categories Metadata
 - **`GET /api/categories`**
   - **Sample Response** (`200 OK`):
     ```json

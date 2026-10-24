@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     searchQuery: "",
     selectedCategory: "all",
     selectedAuthor: "all",
-    debounceTimer: null
+    debounceTimer: null,
+    currentQuotes: []
   };
 
   // DOM Elements
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const quotesGrid = document.getElementById("quotesGrid");
   const resultsCount = document.getElementById("resultsCount");
+  const exportCsvBtn = document.getElementById("exportCsvBtn");
   const emptyState = document.getElementById("emptyState");
   const resetFiltersBtn = document.getElementById("resetFiltersBtn");
   const toast = document.getElementById("toast");
@@ -41,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Copy to Clipboard
-  async function copyQuote(quoteText, quoteAuthor) {
+  async function copyQuote(quoteText, quoteAuthor, clickedBtn = null) {
     const formatted = `"${quoteText}" — ${quoteAuthor}`;
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -57,6 +59,17 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.removeChild(textarea);
       }
       showToast("Quote copied to clipboard!");
+
+      if (clickedBtn) {
+        clickedBtn.classList.add("copied");
+        const label = clickedBtn.querySelector(".copy-btn-label, .btn-text");
+        const prevText = label ? label.textContent : "";
+        if (label) label.textContent = "Copied!";
+        setTimeout(() => {
+          clickedBtn.classList.remove("copied");
+          if (label) label.textContent = prevText;
+        }, 1600);
+      }
     } catch (err) {
       console.error("Clipboard copy failed:", err);
       showToast("Failed to copy quote.");
@@ -150,7 +163,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Render Grid
   function renderQuotesGrid(quotes) {
+    state.currentQuotes = quotes;
     resultsCount.textContent = `Showing ${quotes.length} quote${quotes.length === 1 ? "" : "s"}`;
+
+    if (exportCsvBtn) {
+      exportCsvBtn.disabled = quotes.length === 0;
+      exportCsvBtn.style.opacity = quotes.length === 0 ? "0.5" : "1";
+    }
 
     if (quotes.length === 0) {
       quotesGrid.innerHTML = "";
@@ -165,16 +184,17 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="quote-item-card" data-id="${q.id}">
         <div class="item-top">
           <span class="category-badge" data-cat="${escapeHtml(q.category)}">${escapeHtml(q.category)}</span>
-          <button class="card-copy-btn" data-quote="${escapeHtml(q.quote)}" data-author="${escapeHtml(q.author)}" title="Copy quote" aria-label="Copy quote">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button class="card-copy-btn" data-quote="${escapeHtml(q.quote)}" data-author="${escapeHtml(q.author)}" title="Copy quote to clipboard" aria-label="Copy quote to clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
+            <span class="copy-btn-label">Copy</span>
           </button>
         </div>
         <blockquote class="item-quote-text">“${escapeHtml(q.quote)}”</blockquote>
         <div class="item-footer">
-          <span class="item-author" data-author="${escapeHtml(q.author)}">${escapeHtml(q.author)}</span>
+          <span class="item-author" data-author="${escapeHtml(q.author)}" title="Filter by this author">${escapeHtml(q.author)}</span>
         </div>
       </div>
     `
@@ -187,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
         e.stopPropagation();
         const text = btn.getAttribute("data-quote");
         const author = btn.getAttribute("data-author");
-        copyQuote(text, author);
+        copyQuote(text, author, btn);
       });
     });
 
@@ -198,6 +218,54 @@ document.addEventListener("DOMContentLoaded", () => {
         setAuthorFilter(authorName);
       });
     });
+  }
+
+  // Export Quotes to CSV
+  function exportToCsv() {
+    const quotes = state.currentQuotes || [];
+    if (quotes.length === 0) {
+      showToast("No quotes to export.");
+      return;
+    }
+
+    const csvRows = [
+      ["ID", "Quote", "Author", "Category"].map(escapeCsvField).join(",")
+    ];
+
+    quotes.forEach(q => {
+      csvRows.push([
+        escapeCsvField(q.id),
+        escapeCsvField(q.quote),
+        escapeCsvField(q.author),
+        escapeCsvField(q.category)
+      ].join(","));
+    });
+
+    const csvContent = "\uFEFF" + csvRows.join("\r\n"); // UTF-8 BOM
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    let filename = "famous_quotes";
+    if (state.selectedCategory && state.selectedCategory !== "all") {
+      filename += `_${state.selectedCategory.toLowerCase()}`;
+    }
+    filename += ".csv";
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast(`Exported ${quotes.length} quotes to ${filename}!`);
+  }
+
+  function escapeCsvField(field) {
+    if (field === null || field === undefined) return '""';
+    const str = String(field);
+    return `"${str.replace(/"/g, '""')}"`;
   }
 
   // Escape HTML helper
@@ -278,9 +346,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   copyHeroBtn.addEventListener("click", () => {
     if (state.heroQuote) {
-      copyQuote(state.heroQuote.quote, state.heroQuote.author);
+      copyQuote(state.heroQuote.quote, state.heroQuote.author, copyHeroBtn);
     }
   });
+
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener("click", exportToCsv);
+  }
 
   // Category pill for "All"
   categoryPillsContainer.querySelector('[data-category="all"]').addEventListener("click", () => {

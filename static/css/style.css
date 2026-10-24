@@ -470,8 +470,33 @@ kbd {
 .results-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.results-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.export-btn {
+  padding: 0.55rem 1.15rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .results-title {
@@ -550,21 +575,30 @@ kbd {
 }
 
 .card-copy-btn {
-  background: none;
-  border: none;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0.35rem;
-  border-radius: var(--radius-sm);
-  display: flex;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-full);
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
   transition: var(--transition);
 }
 
 .card-copy-btn:hover {
   color: var(--primary);
+  border-color: var(--border-hover);
   background: var(--primary-light);
+}
+
+.card-copy-btn.copied, .icon-btn.copied {
+  color: #059669 !important;
+  border-color: #a7f3d0 !important;
+  background: #ecfdf5 !important;
 }
 
 /* Empty State */
