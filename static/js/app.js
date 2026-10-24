@@ -30,6 +30,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const emptyState = document.getElementById("emptyState");
   const resetFiltersBtn = document.getElementById("resetFiltersBtn");
   const toast = document.getElementById("toast");
+  const themeToggle = document.getElementById("themeToggle");
+
+  // Initialize and Sync Theme
+  function initTheme() {
+    const activeTheme = document.documentElement.getAttribute("data-theme") || 
+      (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    
+    if (themeToggle) {
+      themeToggle.checked = activeTheme === "dark";
+      themeToggle.addEventListener("change", (e) => {
+        const nextTheme = e.target.checked ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        localStorage.setItem("theme", nextTheme);
+        showToast(`Switched to ${nextTheme} mode`);
+      });
+    }
+
+    if (window.matchMedia) {
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+        if (!localStorage.getItem("theme")) {
+          const sysTheme = e.matches ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", sysTheme);
+          if (themeToggle) themeToggle.checked = e.matches;
+        }
+      });
+    }
+  }
 
   // Show Toast
   let toastTimer = null;
@@ -417,6 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Initial Load
+  initTheme();
   loadMetadata();
   fetchRandomQuote();
   fetchQuotes();

@@ -23,7 +23,8 @@ A responsive web application built with **Python Flask**, **Vanilla JavaScript**
   - **Empty State**: Friendly fallback when no matching quotes are found, with a one-click "Reset All Filters" button.
 - **Clipboard Integration**: One-click "Copy to Clipboard" button on every quote card and hero card with inline "Copied!" visual feedback and toast notifications.
 - **Export to CSV**: Download matching or all quotes directly to a CSV file (with Excel UTF-8 BOM encoding and dynamic file naming, e.g., `famous_quotes_science.csv`).
-- **Adaptive Design**: Fully responsive layout (mobile, tablet, desktop) with automatic **Dark Mode** support based on user OS preferences.
+- **Dark / Light Mode Toggle**: Interactive toggle switch in the header that swaps the color scheme by dynamically overriding CSS root variables, with preference persistence in `localStorage` and zero-flicker initial load.
+- **Adaptive Design**: Fully responsive layout (mobile, tablet, desktop) with automatic system preference detection.
 
 ### Backend & API
 - **Lightweight Flask Architecture**: Zero external frontend build tools, powered by clean Python routing.
