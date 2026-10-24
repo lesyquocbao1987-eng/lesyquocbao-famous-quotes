@@ -5,90 +5,175 @@ A responsive web application built with **Python Flask**, **Vanilla JavaScript**
 ![Python](https://img.shields.io/badge/Python-3.14-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.x-000000?logo=flask&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?logo=javascript&logoColor=black)
+![CSS3](https://img.shields.io/badge/CSS3-Vanilla-1572B6?logo=css3&logoColor=white)
+![Pytest](https://img.shields.io/badge/pytest-Passing-brightgreen?logo=pytest&logoColor=white)
+
+---
 
 ## Features
 
-- **Random Quote Generator**: Generates random quotes with smooth animations; supports pressing <kbd>Space</kbd> for the next quote.
+### User Interface & Experience
+- **Random Quote Hero**: Prominently displays a featured quote with smooth fade animations, author avatar initials, and category badges.
+- **Keyboard Shortcut**: Press <kbd>Space</kbd> anywhere on the page (outside input fields) to instantly fetch a new random quote.
 - **Search & Filter**:
-  - Instant debounced text search across quotes and authors.
-  - Category filtering (*Inspiration*, *Wisdom*, *Science*, *Leadership*, *Life*, *Philosophy*, *Humor*, *Courage*, *Success*).
-  - Filter by specific authors.
-- **One-Click Copy**: Copy formatted quotes directly to the clipboard with toast feedback.
-- **Modern Responsive Design**: Clean card interface supporting dark mode preferences and mobile/desktop layouts.
-- **RESTful API**: Endpoints for quotes, categories, and authors.
+  - **Debounced Live Search**: Real-time searching across quotes, authors, and categories with a 250ms debounce for high performance.
+  - **Category Pills**: Quick filter tabs showing live quote counts per category (*Inspiration*, *Wisdom*, *Science*, *Leadership*, *Life*, *Philosophy*, *Humor*, *Courage*, *Success*).
+  - **Author Dropdown**: Filter quotes by author, complete with count indicators.
+  - **Quick Author Click**: Clicking any author name on any card in the gallery automatically filters the entire view by that author.
+  - **Empty State**: Friendly fallback when no matching quotes are found, with a one-click "Reset All Filters" button.
+- **Clipboard Integration**: One-click "Copy" on both the hero card and gallery cards with formatted output (`"Quote text" — Author`) and toast notifications.
+- **Adaptive Design**: Fully responsive layout (mobile, tablet, desktop) with automatic **Dark Mode** support based on user OS preferences.
+
+### Backend & API
+- **Lightweight Flask Architecture**: Zero external frontend build tools, powered by clean Python routing.
+- **Fast In-Memory Filtering**: JSON-backed dataset with case-insensitive search and parameter-based querying.
+- **Automated Test Suite**: 10 unit tests covering dataset integrity, route responses, and edge cases.
+
+---
 
 ## Project Structure
 
 ```
 famous-quotes/
-├── app.py                 # Flask server & REST API
-├── requirements.txt       # Dependencies
-├── .gitignore             # Git ignore rules
+├── app.py                 # Flask server & REST API endpoints
+├── requirements.txt       # Python dependencies (Flask, pytest)
+├── .gitignore             # Git ignore rules for Python, venv, and OS files
 ├── data/
 │   └── quotes.json        # Curated dataset of 100 famous quotes
 ├── static/
 │   ├── css/
-│   │   └── style.css      # Vanilla CSS styling
+│   │   └── style.css      # Vanilla CSS (variables, grid, dark mode, animations)
 │   └── js/
-│       └── app.js         # Vanilla JavaScript application logic
+│       └── app.js         # Vanilla JavaScript (state management, API calls, DOM)
 ├── templates/
-│   └── index.html         # HTML5 interface
+│   └── index.html         # Semantic HTML5 template
 └── tests/
-    └── test_app.py        # Automated test suite
+    └── test_app.py        # Automated pytest suite
 ```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.10+
-- pip
+- **Python 3.10+** (Tested on Python 3.14)
+- **pip** package manager
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/lesyquocbao1987-eng/lesyquocbao-famous-quotes.git
    cd lesyquocbao-famous-quotes
    ```
 
-2. Create and activate a virtual environment:
-   ```bash
+2. **Create and activate a virtual environment**:
+   ```powershell
+   # Windows (PowerShell):
    python -m venv .venv
-   # Windows:
-   .\.venv\Scripts\activate
-   # macOS/Linux:
+   .\.venv\Scripts\Activate.ps1
+
+   # macOS / Linux:
+   python3 -m venv .venv
    source .venv/bin/activate
    ```
 
-3. Install dependencies:
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-### Running the App
+### Running the Application
 
+Start the Flask server:
 ```bash
 python app.py
 ```
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+Open **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
-### Running Tests
+### Running the Test Suite
 
+Run the unit tests with `pytest`:
 ```bash
 pytest tests/ -v
 ```
 
-## API Endpoints
+---
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/` | `GET` | Web user interface |
-| `/api/quotes/random` | `GET` | Random quote (optional query params: `?category=...&author=...`) |
-| `/api/quotes` | `GET` | List quotes with filters (`?q=...&category=...&author=...`) |
-| `/api/categories` | `GET` | Categories with quote counts |
-| `/api/authors` | `GET` | Authors with quote counts |
+## API Reference
+
+### 1. Web Page
+- **`GET /`**
+  - **Description**: Serves the single-page HTML interface.
+
+### 2. Get Random Quote
+- **`GET /api/quotes/random`**
+  - **Query Parameters (Optional)**:
+    - `category`: Filter random pool by category (e.g. `Science`, `Wisdom`).
+    - `author`: Filter random pool by author name (e.g. `Albert Einstein`).
+  - **Sample Response** (`200 OK`):
+    ```json
+    {
+      "id": 2,
+      "quote": "In the middle of difficulty lies opportunity.",
+      "author": "Albert Einstein",
+      "category": "Science"
+    }
+    ```
+
+### 3. List & Filter Quotes
+- **`GET /api/quotes`**
+  - **Query Parameters (Optional)**:
+    - `q`: Search keyword matching quote text, author, or category.
+    - `category`: Category name or `all`.
+    - `author`: Author name or `all`.
+  - **Sample Response** (`200 OK`):
+    ```json
+    {
+      "total": 1,
+      "quotes": [
+        {
+          "id": 2,
+          "quote": "In the middle of difficulty lies opportunity.",
+          "author": "Albert Einstein",
+          "category": "Science"
+        }
+      ]
+    }
+    ```
+
+### 4. Categories Metadata
+- **`GET /api/categories`**
+  - **Sample Response** (`200 OK`):
+    ```json
+    [
+      { "name": "Courage", "count": 10 },
+      { "name": "Humor", "count": 5 },
+      { "name": "Inspiration", "count": 14 },
+      { "name": "Leadership", "count": 10 },
+      { "name": "Life", "count": 8 },
+      { "name": "Philosophy", "count": 12 },
+      { "name": "Science", "count": 11 },
+      { "name": "Success", "count": 10 },
+      { "name": "Wisdom", "count": 20 }
+    ]
+    ```
+
+### 5. Authors Metadata
+- **`GET /api/authors`**
+  - **Sample Response** (`200 OK`):
+    ```json
+    [
+      { "name": "Albert Einstein", "count": 6 },
+      { "name": "Aristotle", "count": 4 },
+      { "name": "Confucius", "count": 4 },
+      ...
+    ]
+    ```
+
+---
 
 ## License
 
-MIT
+This project is licensed under the MIT License.
